@@ -11,4 +11,5 @@ public:
     // std::move so that line moves and not gets copied
     // faster and memory-efficient
     RawLine(long num, std::string log) : lineNumber(num), line(std::move(log)) {}
+    RawLine();
 };
