@@ -2,6 +2,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include<utility>
 
 template <typename T>
 class BoundedQueue
@@ -21,17 +22,18 @@ private:
 public:
     BoundedQueue() = default;
 
-    BoundedQueue(size_t cap) : capacity(cap), q() {}
+    BoundedQueue(std::size_t cap) : capacity(cap), q() {}
 
-    void push(const T &item)
+    bool push(const T &item)
     {
         std::unique_lock<std::mutex> lock(mtx);
         notFull.wait(lock, [&]
                      { return q.size() < capacity || closed; });
         if (closed)
-            return;
+            return false;
         q.push(item);
         notEmpty.notify_one();
+        return true;
     }
 
     bool pop(T &out)
