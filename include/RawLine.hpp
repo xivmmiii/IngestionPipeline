@@ -1,10 +1,11 @@
 #pragma once
 #include <string>
+#include <utility>
 
 class RawLine
 {
 private:
-    long lineNumber;
+    long lineNumber = 0;
     std::string line;
 
 public:
@@ -12,8 +13,12 @@ public:
     // faster and memory-efficient
     RawLine(long num, std::string log) : lineNumber(num), line(std::move(log)) {}
     RawLine();
-    std::string getLine()
+    const std::string &getLine() const
     {
         return line;
+    }
+    long getLineNumber() const
+    {
+        return lineNumber;
     }
 };
