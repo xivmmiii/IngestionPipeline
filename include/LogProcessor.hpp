@@ -14,7 +14,7 @@
 class LogProcessor
 {
 public:
-    void process(const std::string &inputFile, int N, size_t capacity, const std::string &outDir)
+    void process(const std::string &inputFile, int N, std::size_t capacity, const std::string &outDir)
     {
         // initialise queue, reader and writer manager
         BoundedQueue<RawLine> queue(capacity);
@@ -34,6 +34,7 @@ public:
         // reserve space for N workers
         // If we don't reserve, vector reallocates and moves Workers in memory while threads are using them — crash.
         workers.reserve(N);
+        workerThreads.reserve(N);
 
         // emplace_back = we give constructor arguments, it builds Worker directly inside vector, no copy.
         // it is faster
@@ -51,12 +52,13 @@ public:
         // blocks main thread until reader finishes and then the workers finish
         readerThread.join();
 
+        // auto identifies the type on its own
         for (auto &t : workerThreads)
             t.join();
 
         writerManager.closeAll();
 
         if (!stats.invariant())
-            throw std::runtime_error("Stats invariant failed");
+            throw std::runtime_error("Stats invariant failed: linesRead != filtered+malformed+written");
     }
 };
