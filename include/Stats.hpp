@@ -1,10 +1,10 @@
 #pragma once
 #include <atomic>
-//makes a variable safe to read/write from multiple threads without mutex
-// has .load() to read
-// has .store(val) to write
-// has .fetch_add(n) to add n
-// has .fetch_sub(n) to minus n
+// makes a variable safe to read/write from multiple threads without mutex
+//  has .load() to read
+//  has .store(val) to write
+//  has .fetch_add(n) to add n
+//  has .fetch_sub(n) to minus n
 
 class Stats
 {
@@ -21,11 +21,12 @@ public:
         return linesRead.load() == (filtered.load() + malformed.load() + written.load());
     }
 
-    //to reset the values held in the members
-    void reset(){
-        linesRead = 0;
-        malformed = 0;
-        written = 0;
-        filtered = 0;
+    // to reset the values held in the members
+    void reset()
+    {
+        linesRead.store(0);
+        filtered.store(0);
+        malformed.store(0);
+        written.store(0);
     }
 };
