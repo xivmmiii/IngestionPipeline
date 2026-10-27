@@ -12,4 +12,8 @@ public:
     // faster and memory-efficient
     RawLine(long num, std::string log) : lineNumber(num), line(std::move(log)) {}
     RawLine();
+    std::string getLine()
+    {
+        return line;
+    }
 };
