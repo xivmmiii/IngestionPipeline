@@ -4,7 +4,7 @@
 #include "WriterManager.hpp"
 #include "Stats.hpp"
 #include "LogParser.hpp"
-#include "LogEntry.hpp"
+#include "ParseResult.hpp"
 
 class Worker
 {
@@ -15,33 +15,33 @@ private:
     LogParser parser;
 
 public:
-    Worker(BoundedQueue<RawLine> &q, WriterManager &w, Stats &s) : queue(q), stats(s), writer(w) {}
+    Worker(BoundedQueue<RawLine> &q, WriterManager &w, Stats &s)
+        : queue(q), stats(s), writer(w), parser() {}
 
     void run()
     {
-        // create a rawline object to store popped log
         RawLine raw;
-        // pop the log and parse it
         while (queue.pop(raw))
         {
-            // update stats
             stats.linesRead.fetch_add(1);
-            // create logentry obj
-            LogEntry entry = parser.parse(raw);
-            // check severity
-            if (entry.malformed)
+
+            ParseResult result = parser.parse(raw);
+
+            if (result.isMalformed)
             {
-                // update stats
+                writer.writeMalformed(result.raw);
                 stats.malformed.fetch_add(1);
-                continue;
             }
-            // add logentry to the file
-            bool didWrite = writer.write(entry);
-            // update stats
-            if (didWrite)
-                stats.written.fetch_add(1);
-            else
+            else if (result.isDebug)
+            {
+                // DEBUG is filtered - not written to output
                 stats.filtered.fetch_add(1);
+            }
+            else
+            {
+                writer.writeSeverity(result.entry, result.raw.getLine());
+                stats.written.fetch_add(1);
+            }
         }
     }
 };
